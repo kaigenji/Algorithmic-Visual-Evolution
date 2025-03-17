@@ -1,0 +1,15 @@
+{
+  "name": "algorithmic-visual-evolution",
+  "version": "1.0.0",
+  "description": "A modular algorithmic visual evolution system.",
+  "main": "app.js",
+  "scripts": {
+    "dev": "live-server"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "live-server": "^1.2.1"
+  }
+}

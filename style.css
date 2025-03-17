@@ -1,0 +1,128 @@
+/* Basic page & canvas styling */
+body {
+  margin: 0;
+  overflow: hidden;
+  font-family: sans-serif;
+  background: #000;
+}
+
+canvas {
+  display: block;
+  outline: none;
+}
+
+/* Glass panel styling common to both panels */
+.glass {
+  position: fixed;
+  top: 0;
+  height: 100vh;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.01);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 8px rgba(0, 0, 0, 0.01);
+  overflow-y: auto;
+  color: white;
+  box-sizing: border-box;
+  z-index: 100000;
+}
+
+/* Left Panel: Parameters */
+.parameters-panel {
+  left: 0;
+  width: 300px;
+}
+
+/* Right Panel: Macros & LFO */
+.macros-panel {
+  right: 0;
+  width: 300px;
+}
+
+/* Container for each control */
+.slider-container,
+.checkbox-container {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+}
+
+/* Label styling */
+.slider-container label,
+.checkbox-container label {
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+/* Description styling */
+.param-desc {
+  font-size: 12px;
+  color: #bbb;
+  margin: 4px 0;
+}
+
+/* Range slider styling */
+.slider-container input[type="range"] {
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+/* Numeric readout styling */
+.slider-container span {
+  font-size: 12px;
+  color: #ddd;
+}
+
+/* Checkbox styling: inline with text and with spacing */
+.checkbox-container label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Glass UI interactive elements */
+input[type="checkbox"],
+button,
+select {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: 1px solid #888;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+}
+
+input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin-right: 4px;
+}
+
+button:hover,
+select:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Macro panel specific styles */
+.macro-item {
+  border: 1px solid #555;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.macro-item select,
+.macro-item input[type="range"],
+.macro-item button {
+  width: 100%;
+}
+
+.macro-item hr {
+  border: none;
+  border-top: 1px solid #444;
+  margin: 8px 0;
+}
