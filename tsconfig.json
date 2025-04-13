@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ES2020",
+    "outDir": "dist",
+    "rootDir": ".",
+    "moduleResolution": "Node",
+    "esModuleInterop": true,
+    "strict": false,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "sourceMap": true
+  },
+  "include": [
+    "app.ts",
+    "algorithms/**/*.ts",
+    "utils/**/*.ts",
+    "config.ts",
+    "types.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "@types/node",
+    "dist"
+  ]
+} 

@@ -4,12 +4,17 @@
   "description": "A modular algorithmic visual evolution system.",
   "main": "app.js",
   "scripts": {
-    "dev": "live-server"
+    "dev": "live-server",
+    "dev:js": "node switch-version.js js",
+    "dev:ts": "node switch-version.js ts",
+    "switch": "node switch-version.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "live-server": "^1.2.1"
+    "live-server": "^1.2.1",
+    "typescript": "^5.3.3"
   }
 }

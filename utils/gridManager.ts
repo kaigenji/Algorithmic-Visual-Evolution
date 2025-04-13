@@ -1,0 +1,62 @@
+// File: utils/gridManager.ts
+import { Cell } from '../types';
+
+interface Direction {
+  di: number;
+  dj: number;
+}
+
+interface BounceResult {
+  newI: number;
+  newJ: number;
+  newDirection: Direction;
+}
+
+export class GridManager {
+  private rows: number;
+  private cols: number;
+  private cells: Cell[][];
+
+  constructor(rows: number, cols: number) {
+    this.rows = rows;
+    this.cols = cols;
+    this.cells = [];
+    for (let i = 0; i < rows; i++) {
+      this.cells[i] = [];
+      for (let j = 0; j < cols; j++) {
+        this.cells[i][j] = {
+          state: 0,
+          color: { r: 0, g: 0, b: 0, a: 1 },
+          decaying: false,
+          birth: 0,
+          decayDelay: 0
+        };
+      }
+    }
+  }
+
+  // Bounce: clamp i,j to grid boundaries. Return the new coords + direction if needed.
+  bounceCoordinates(i: number, j: number, direction: Direction): BounceResult {
+    const newI = Math.max(0, Math.min(i, this.rows - 1));
+    const newJ = Math.max(0, Math.min(j, this.cols - 1));
+
+    let newDirection: Direction = { di: direction.di, dj: direction.dj };
+    if (i < 0 || i >= this.rows) newDirection.di = -direction.di;
+    if (j < 0 || j >= this.cols) newDirection.dj = -direction.dj;
+
+    return { newI, newJ, newDirection };
+  }
+
+  // Public getters
+  public getCells(): Cell[][] {
+    return this.cells;
+  }
+
+  public getRows(): number {
+    return this.rows;
+  }
+
+  public getCols(): number {
+    return this.cols;
+  }
+} 
