@@ -1,0 +1,79 @@
+{
+  "cellSize": 10,
+  "tickRate": 60,
+  "activeCellDensity": 0.62,
+  "decay": {
+    "baseDelay": 100,
+    "normalStep": 0.02,
+    "randomRange": 20,
+    "slowdownFactor": 0.05,
+    "minDecayChance": 0.002,
+    "baseDecayChance": 0.35,
+    "edgeBreakChance": 0.25,
+    "voidDropChance": 0.10
+  },
+  "creepingFig": {
+    "baseActivations": 5,
+    "neighborRadius": 2,
+    "branchAge": 5,
+    "directionFollowChance": 0.3,
+    "maxActiveCells": 10000,
+    "expansionBiasFactor": 0.2,
+    "bounceReflectionFactor": 1.0
+  },
+  "burstMechanics": {
+    "pulseChance": 0.12,
+    "burstSize": 30,
+    "burstDecayMultiplier": 1.5
+  },
+  "equilibrium": {
+    "maxExpansionScale": 7,
+    "maxDecayScale": 4,
+    "minExpansionScale": 0.3,
+    "minDecayScale": 0.15,
+    "expansionResponse": 1.2,
+    "decayResponse": 1.1
+  },
+  "binaryTransitions": {
+    "enabled": false,
+    "threshold": 0.25
+  },
+  "colorSettings": {
+    "baseH": 0,
+    "baseS": 100,
+    "baseB": 100,
+    "scheme": "analogous"
+  },
+  "macros": [
+    {
+      "enabled": true,
+      "trigFunc": "sin",
+      "periodMultiplier": 1.0,
+      "lfoPeriod": 100,
+      "dampener": 0.4,
+      "useCurrentBaseline": false,
+      "targets": [
+        {
+          "path": "colorSettings.baseH",
+          "influence": 0.7,
+          "baseline": 0
+        }
+      ]
+    },
+    {
+      "enabled": true,
+      "trigFunc": "sin",
+      "periodMultiplier": 0.25,
+      "lfoPeriod": 100,
+      "dampener": 0.2,
+      "useCurrentBaseline": false,
+      "targets": [
+        {
+          "path": "activeCellDensity",
+          "influence": 0.5,
+          "baseline": 0.62
+        }
+      ]
+    }
+  ]
+} 

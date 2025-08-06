@@ -1,55 +1,27 @@
-import { config } from '../config';
+/**
+ * Algorithmic Visual Evolution - Creeping Fig Algorithm
+ * 
+ * Implements a cellular growth algorithm that mimics organic growth patterns:
+ * - Creates branching, vine-like structures that spread across the grid
+ * - Manages cell activation, growth direction, and propagation
+ * - Handles neighbor detection and branch formation
+ * - Implements edge reflection and containment behaviors
+ * - Controls growth rate and branch density parameters
+ */
+
+import { config } from '../config.js';
 import { Cell, RGB, HSB, BounceFunction } from '../types';
-
-function hsbToRgb(h: number, s: number, b: number): RGB {
-  s /= 100;
-  b /= 100;
-  const c = b * s;
-  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
-  const m = b - c;
-  let r1: number, g1: number, b1: number;
-  
-  if (h < 60) {
-    r1 = c; g1 = x; b1 = 0;
-  } else if (h < 120) {
-    r1 = x; g1 = c; b1 = 0;
-  } else if (h < 180) {
-    r1 = 0; g1 = c; b1 = x;
-  } else if (h < 240) {
-    r1 = 0; g1 = x; b1 = c;
-  } else if (h < 300) {
-    r1 = x; g1 = 0; b1 = c;
-  } else {
-    r1 = c; g1 = 0; b1 = x;
-  }
-  
-  return {
-    r: Math.round((r1 + m) * 255),
-    g: Math.round((g1 + m) * 255),
-    b: Math.round((b1 + m) * 255),
-    a: 1
-  };
-}
-
-interface ActiveCell {
-  i: number;
-  j: number;
-}
-
-interface NeighborOffset {
-  di: number;
-  dj: number;
-}
+import { GridManager, Direction, CellPosition } from '../utils/gridManager';
 
 export class CreepingFig {
   private cells: Cell[][];
   private rows: number;
   private cols: number;
   private bounceFn: BounceFunction;
-  private activeCells: ActiveCell[];
-  private neighborOffsets: NeighborOffset[];
+  private activeCells: CellPosition[];
   private totalCells: number;
   private cycle: number;
+  private gridManager: GridManager | null;
 
   constructor(
     initialRow: number,
@@ -57,31 +29,21 @@ export class CreepingFig {
     cells: Cell[][],
     rows: number,
     cols: number,
-    bounceFn: BounceFunction
+    bounceFn: BounceFunction,
+    gridManager?: GridManager
   ) {
     this.cells = cells;
     this.rows = rows;
     this.cols = cols;
     this.bounceFn = bounceFn;
+    this.gridManager = gridManager || null;
 
     this.activeCells = [];
     this.activateCell(initialRow, initialCol, undefined);
     this.activeCells.push({ i: initialRow, j: initialCol });
 
-    this.neighborOffsets = [];
     this.totalCells = rows * cols;
     this.cycle = 0;
-  }
-
-  private buildNeighborOffsets(radius: number): NeighborOffset[] {
-    const offsets: NeighborOffset[] = [];
-    for (let di = -radius; di <= radius; di++) {
-      for (let dj = -radius; dj <= radius; dj++) {
-        if (di === 0 && dj === 0) continue;
-        offsets.push({ di, dj });
-      }
-    }
-    return offsets;
   }
 
   update(growthMultiplier: number): void {
@@ -90,11 +52,6 @@ export class CreepingFig {
     const neighborRadius = figCfg.neighborRadius;
     const branchAge = figCfg.branchAge;
     const directionFollowChance = figCfg.directionFollowChance;
-
-    if (!this.neighborOffsets.length ||
-        Math.abs(this.neighborOffsets[0].di) > neighborRadius) {
-      this.neighborOffsets = this.buildNeighborOffsets(neighborRadius);
-    }
 
     this.cycle++;
     this.pruneInactive();
@@ -114,13 +71,18 @@ export class CreepingFig {
       const age = this.cycle - (cell.birth || 0);
       if (age < branchAge) continue;
 
-      let chosenOffset: NeighborOffset;
+      // Get a random direction, either following previous or choosing new
+      let chosenOffset: Direction;
+      
       if (Math.random() < 0.2) {
-        chosenOffset = this.neighborOffsets[Math.floor(Math.random() * this.neighborOffsets.length)];
+        // Get random neighbor offset
+        chosenOffset = this.getRandomNeighborOffset(neighborRadius);
       } else if (cell.prevDir && Math.random() < directionFollowChance) {
-        chosenOffset = cell.prevDir;
+        // Follow previous direction
+        chosenOffset = cell.prevDir as Direction;
       } else {
-        chosenOffset = this.neighborOffsets[Math.floor(Math.random() * this.neighborOffsets.length)];
+        // Get random neighbor offset
+        chosenOffset = this.getRandomNeighborOffset(neighborRadius);
       }
 
       let newI = i + chosenOffset.di;
@@ -134,13 +96,29 @@ export class CreepingFig {
         }
       }
 
-      if (!this.cells[newI] || !this.cells[newI][newJ]) continue;
+      const isValid = this.gridManager ? 
+        this.gridManager.isValidPosition(this.cells, newI, newJ) : 
+        (newI >= 0 && newI < this.rows && newJ >= 0 && newJ < this.cols && !!this.cells[newI][newJ]);
+
+      if (!isValid) continue;
 
       if (this.cells[newI][newJ].state === 0) {
         this.activateCell(newI, newJ, chosenOffset);
         this.activeCells.push({ i: newI, j: newJ });
       }
     }
+  }
+
+  private getRandomNeighborOffset(radius: number): Direction {
+    // Create a random neighbor offset within the specified radius
+    const offsets: Direction[] = [];
+    for (let di = -radius; di <= radius; di++) {
+      for (let dj = -radius; dj <= radius; dj++) {
+        if (di === 0 && dj === 0) continue;
+        offsets.push({ di, dj });
+      }
+    }
+    return offsets[Math.floor(Math.random() * offsets.length)];
   }
 
   updateDecay(decayMultiplier: number): void {
@@ -207,7 +185,13 @@ export class CreepingFig {
     }
   }
 
-  private activateCell(i: number, j: number, dir: NeighborOffset | undefined): void {
+  private activateCell(i: number, j: number, dir: Direction | undefined): void {
+    if (this.gridManager) {
+      this.gridManager.activateCell(this.cells, i, j, dir, undefined, this.cycle);
+      return;
+    }
+    
+    // Fallback if GridManager not available
     const dCfg = config.decay;
     const c = this.cells[i][j];
     if (!c) return;
@@ -219,6 +203,8 @@ export class CreepingFig {
     if (derived && derived.length > 0) {
       const idx = Math.floor(Math.random() * derived.length);
       const hsb = derived[idx] as HSB;
+      // Import hsbToRgb dynamically if needed
+      const { hsbToRgb } = require('../utils/colorTheory');
       c.color = hsbToRgb(hsb.h, hsb.s, hsb.b);
     } else {
       c.color = { r: 255, g: 0, b: 0, a: 1 };

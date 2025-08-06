@@ -1,3 +1,13 @@
+/**
+ * Algorithmic Visual Evolution - UI Manager
+ *
+ * Handles all aspects of the user interface for parameter control:
+ * - Creates and manages sliders, controls, and selectors
+ * - Updates visual representation of parameter values
+ * - Handles parameter changes and updates configuration
+ * - Organizes UI components in the parameter panel
+ * - Provides real-time feedback on parameter adjustments
+ */
 import { config } from '../config.js';
 import { availableSchemes } from './colorTheory.js';
 // Export an object to store slider references by config path.
@@ -100,7 +110,6 @@ export const PARAM_DEFINITIONS = [
         step: 0.01,
         type: "range"
     },
-    // New Hue parameter added so that macros can modulate hue.
     {
         path: "colorSettings.baseH",
         label: "Hue",
@@ -146,12 +155,24 @@ function createRange(def, updateConfigFn) {
     slider.setAttribute('value', getConfigValueByPath(def.path).toString());
     const valueDisplay = document.createElement('span');
     valueDisplay.textContent = (Math.round(parseFloat(slider.value) * 100) / 100).toString();
+    slider.addEventListener('mousedown', () => {
+        // Mark parameter as being adjusted
+        if (window.setParameterBeingAdjusted) {
+            window.setParameterBeingAdjusted(def.path, true);
+        }
+    });
     slider.addEventListener('input', (e) => {
         const val = parseFloat(e.target.value);
         valueDisplay.textContent = (Math.round(val * 100) / 100).toString();
         config._overrides[def.path] = true;
         setConfigValueByPath(def.path, val);
         updateConfigFn(def.path, val);
+    });
+    slider.addEventListener('mouseup', () => {
+        // Mark parameter as no longer being adjusted
+        if (window.setParameterBeingAdjusted) {
+            window.setParameterBeingAdjusted(def.path, false);
+        }
     });
     container.appendChild(label);
     container.appendChild(desc);
@@ -184,9 +205,6 @@ function createCheckbox(def, updateConfigFn) {
 function createColorSettings(updateConfigFn) {
     const container = document.createElement('div');
     container.classList.add('slider-container');
-    const header = document.createElement('h3');
-    header.textContent = "Color Settings";
-    container.appendChild(header);
     container.appendChild(createRange({
         path: "colorSettings.baseH",
         label: "Hue",

@@ -1,5 +1,16 @@
-import { CreepingFig } from './creepingFig';
+/**
+ * Algorithmic Visual Evolution - Kaleidoscope Algorithm
+ * 
+ * Implements a cellular automaton that creates kaleidoscope-like symmetric patterns:
+ * - Manages cell growth and decay through quadrant mirroring
+ * - Handles cell state transitions and color interpolation
+ * - Creates balanced, symmetric visual patterns that evolve over time
+ * - Responds to equilibrium parameters to maintain target cell density
+ */
+
+import { CreepingFig } from './creepingFig.js';
 import { Cell, BounceFunction, RGB } from '../types';
+import { GridManager, Direction } from '../utils/gridManager';
 
 export class Kaleidoscope {
   private cells: Cell[][];
@@ -10,6 +21,7 @@ export class Kaleidoscope {
   private baseCols: number;
   private baseCells: Cell[][];
   private creepingFig: CreepingFig;
+  private gridManager: GridManager;
 
   constructor(
     initialRow: number,
@@ -17,31 +29,24 @@ export class Kaleidoscope {
     fullCells: Cell[][],
     rows: number,
     cols: number,
-    bounceFn: BounceFunction
+    gridManager: GridManager
   ) {
     this.cells = fullCells;
     this.rows = rows;
     this.cols = cols;
-    this.bounceFn = bounceFn;
+    this.gridManager = gridManager;
+    this.bounceFn = gridManager.bounceCoordinates.bind(gridManager);
 
     // Base quadrant is top-left quarter
     this.baseRows = Math.floor(rows / 2);
     this.baseCols = Math.floor(cols / 2);
 
-    // Create a sub-grid for the creeping fig
-    this.baseCells = [];
-    for (let i = 0; i < this.baseRows; i++) {
-      this.baseCells[i] = [];
-      for (let j = 0; j < this.baseCols; j++) {
-        this.baseCells[i][j] = {
-          state: 0,
-          color: { r: 128, g: 0, b: 128, a: 1 } as RGB,
-          decaying: false,
-          birth: 0,
-          decayDelay: 0
-        };
-      }
-    }
+    // Create a sub-grid for the creeping fig using the GridManager
+    this.baseCells = this.gridManager.createSubGrid(
+      this.baseRows, 
+      this.baseCols, 
+      { r: 128, g: 0, b: 128, a: 1 }
+    );
 
     // The single CreepingFig in that sub-grid
     const baseRow = Math.floor(this.baseRows / 2);
@@ -52,7 +57,8 @@ export class Kaleidoscope {
       this.baseCells,
       this.baseRows,
       this.baseCols,
-      this.bounceBaseCoordinates.bind(this)
+      this.bounceBaseCoordinates.bind(this),
+      this.gridManager
     );
   }
 
@@ -69,14 +75,23 @@ export class Kaleidoscope {
     for (let i = 0; i < this.baseRows; i++) {
       for (let j = 0; j < this.baseCols; j++) {
         const src = this.baseCells[i][j];
-        this.copyCell(i, j, src);
-        this.copyCell(i, j + this.baseCols, this.baseCells[i][this.baseCols - j - 1]);
-        this.copyCell(
+        
+        // Copy to all four quadrants using GridManager
+        this.gridManager.copyCell(this.cells, i, j, src);
+        this.gridManager.copyCell(
+          this.cells, 
+          i, 
+          j + this.baseCols, 
+          this.baseCells[i][this.baseCols - j - 1]
+        );
+        this.gridManager.copyCell(
+          this.cells,
           i + this.baseRows,
           j,
           this.baseCells[this.baseRows - i - 1][j]
         );
-        this.copyCell(
+        this.gridManager.copyCell(
+          this.cells,
           i + this.baseRows,
           j + this.baseCols,
           this.baseCells[this.baseRows - i - 1][this.baseCols - j - 1]
@@ -85,21 +100,7 @@ export class Kaleidoscope {
     }
   }
 
-  private copyCell(targetRow: number, targetCol: number, sourceCell: Cell): void {
-    const row = Math.max(0, Math.min(targetRow, this.rows - 1));
-    const col = Math.max(0, Math.min(targetCol, this.cols - 1));
-    const mainCell = this.cells[row][col];
-
-    mainCell.state = sourceCell.state;
-    if (sourceCell.color) {
-      mainCell.color = { ...sourceCell.color };
-    }
-    mainCell.decaying = sourceCell.decaying;
-    mainCell.birth = sourceCell.birth;
-    mainCell.decayDelay = sourceCell.decayDelay;
-  }
-
-  private bounceBaseCoordinates(i: number, j: number, direction: { di: number; dj: number }): { newI: number; newJ: number } {
+  private bounceBaseCoordinates(i: number, j: number, direction: Direction): { newI: number; newJ: number } {
     const newI = Math.max(0, Math.min(i, this.baseRows - 1));
     const newJ = Math.max(0, Math.min(j, this.baseCols - 1));
     return { newI, newJ };

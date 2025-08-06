@@ -1,3 +1,14 @@
+/**
+ * Algorithmic Visual Evolution - Keyboard Controls
+ * 
+ * Implements keyboard input handling for user interaction:
+ * - Maps keyboard keys to specific simulation parameters and actions
+ * - Handles keyboard events and updates configuration values
+ * - Provides shortcuts for adjusting simulation parameters
+ * - Supports modifier keys for fine/coarse adjustments
+ * - Displays on-screen feedback for keyboard interactions
+ */
+
 // File: utils/keys.ts
 import { Config } from '../types';
 import { Macro } from './macros';

@@ -1,3 +1,18 @@
+/**
+ * Algorithmic Visual Evolution - Type Definitions
+ * 
+ * Central location for shared TypeScript interfaces and types used across the application:
+ * - Color types (RGB, HSB)
+ * - Cell structure definitions
+ * - Parameter and configuration interfaces
+ * - Function type signatures 
+ * 
+ * Ensures consistent typing across modules and improves code maintainability.
+ */
+
+// Import Direction from GridManager to ensure type consistency
+import { Direction } from './utils/gridManager.js';
+
 export interface RGB {
   r: number;
   g: number;
@@ -15,12 +30,15 @@ export interface Cell {
   state: number;
   color?: RGB;
   birth?: number;
-  prevDir?: { di: number; dj: number };
+  prevDir?: Direction;
   decayDelay?: number;
   decaying?: boolean;
 }
 
 export interface Config {
+  canvasWidth: number; 
+  canvasHeight: number;
+  cellSize: number;
   minCellSize: number;
   maxCellSize: number;
   minTickRate: number;
@@ -47,6 +65,7 @@ export interface Config {
     baseH: number;
     baseS: number;
     baseB: number;
+    scheme?: string;
   };
   derivedColors?: HSB[];
   _overrides: Record<string, boolean>;
@@ -62,4 +81,4 @@ export interface ParameterDefinition {
   type: "range" | "checkbox";
 }
 
-export type BounceFunction = (newI: number, newJ: number, offset: { di: number; dj: number }) => { newI: number; newJ: number } | null; 
+export type BounceFunction = (newI: number, newJ: number, offset: Direction) => { newI: number; newJ: number } | null; 

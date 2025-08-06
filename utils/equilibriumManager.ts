@@ -1,5 +1,16 @@
+/**
+ * Algorithmic Visual Evolution - Equilibrium Manager
+ * 
+ * Maintains system balance and stability by regulating growth and decay:
+ * - Monitors active cell density and adjusts parameters to reach target values
+ * - Dynamically scales growth and decay rates to maintain equilibrium
+ * - Implements feedback mechanisms to prevent explosive growth or extinction
+ * - Provides multipliers used by growth and decay algorithms
+ * - Gradually adjusts parameters to create smooth transitions
+ */
+
 // File: utils/equilibriumManager.ts
-import { config } from '../config';
+import { config } from '../config.js';
 
 interface EquilibriumConfig {
   maxExpansionScale: number;

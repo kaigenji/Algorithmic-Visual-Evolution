@@ -1,4 +1,15 @@
-// File: config.ts
+/**
+ * Algorithmic Visual Evolution - Configuration
+ *
+ * Central configuration system that defines:
+ * - Core system settings (dimensions, cell size, tick rate)
+ * - Growth and decay parameters for cell behaviors
+ * - Color settings and processing parameters
+ * - Visual effect and transition properties
+ *
+ * Provides a single source of truth for all configurable parameters
+ * used throughout the application.
+ */
 export const config = {
     // CORE SYSTEM SETTINGS
     canvasWidth: window.innerWidth,
@@ -63,6 +74,8 @@ export const config = {
     // Holds derived colors computed from the color settings.
     derivedColors: [],
     // Internal override flags for parameters touched manually.
-    _overrides: {}
+    _overrides: {},
+    // RANDOM START SETTING
+    RANDOM_START: true
 };
 //# sourceMappingURL=config.js.map

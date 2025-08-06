@@ -1,11 +1,170 @@
 /**
- * colorTheory.ts
+ * Algorithmic Visual Evolution - Color Theory
  *
- * This module defines an extensive mapping of color schemes.
- * Each key represents a scheme name, and its value is a function
- * that returns an array of derived color objects based on the provided
- * base HSB values.
+ * Handles all color generation and processing for visual effects:
+ * - Provides color scheme generation using color theory principles
+ * - Implements various color harmonies (complementary, triadic, analogous, etc.)
+ * - Manages HSB to RGB color conversions
+ * - Generates derived colors from base colors according to selected schemes
+ * - Exports color utilities used throughout the application
  */
+/**
+ * Converts HSB (Hue, Saturation, Brightness) color to RGB.
+ *
+ * @param h Hue value (0-360)
+ * @param s Saturation value (0-100)
+ * @param b Brightness value (0-100)
+ * @returns RGB color object with alpha = 1
+ */
+export function hsbToRgb(h, s, b) {
+    s /= 100;
+    b /= 100;
+    const c = b * s;
+    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+    const m = b - c;
+    let r1, g1, b1;
+    if (h < 60) {
+        r1 = c;
+        g1 = x;
+        b1 = 0;
+    }
+    else if (h < 120) {
+        r1 = x;
+        g1 = c;
+        b1 = 0;
+    }
+    else if (h < 180) {
+        r1 = 0;
+        g1 = c;
+        b1 = x;
+    }
+    else if (h < 240) {
+        r1 = 0;
+        g1 = x;
+        b1 = c;
+    }
+    else if (h < 300) {
+        r1 = x;
+        g1 = 0;
+        b1 = c;
+    }
+    else {
+        r1 = c;
+        g1 = 0;
+        b1 = x;
+    }
+    return {
+        r: Math.round((r1 + m) * 255),
+        g: Math.round((g1 + m) * 255),
+        b: Math.round((b1 + m) * 255),
+        a: 1
+    };
+}
+/**
+ * Converts RGB color to HSB.
+ *
+ * @param r Red component (0-255)
+ * @param g Green component (0-255)
+ * @param b Blue component (0-255)
+ * @returns HSB color object
+ */
+export function rgbToHsb(r, g, b) {
+    r /= 255;
+    g /= 255;
+    b /= 255;
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const d = max - min;
+    let h = 0;
+    const s = max === 0 ? 0 : d / max;
+    const v = max;
+    if (max !== min) {
+        switch (max) {
+            case r:
+                h = (g - b) / d + (g < b ? 6 : 0);
+                break;
+            case g:
+                h = (b - r) / d + 2;
+                break;
+            case b:
+                h = (r - g) / d + 4;
+                break;
+        }
+        h = Math.round(h * 60);
+    }
+    return {
+        h,
+        s: Math.round(s * 100),
+        b: Math.round(v * 100)
+    };
+}
+/**
+ * Interpolates between two colors in RGB space.
+ *
+ * @param color1 Starting RGB color
+ * @param color2 Ending RGB color
+ * @param t Interpolation factor (0-1)
+ * @returns Interpolated RGB color
+ */
+export function interpolateRgb(color1, color2, t) {
+    return {
+        r: Math.round(color1.r + (color2.r - color1.r) * t),
+        g: Math.round(color1.g + (color2.g - color1.g) * t),
+        b: Math.round(color1.b + (color2.b - color1.b) * t),
+        a: color1.a + (color2.a - color1.a) * t
+    };
+}
+/**
+ * Interpolates between two colors in HSB space (better for visual transitions).
+ *
+ * @param color1 Starting HSB color
+ * @param color2 Ending HSB color
+ * @param t Interpolation factor (0-1)
+ * @returns Interpolated HSB color
+ */
+export function interpolateHsb(color1, color2, t) {
+    // Handle hue interpolation across the color wheel
+    let h1 = color1.h;
+    let h2 = color2.h;
+    // Ensure shortest path around the color wheel
+    if (Math.abs(h2 - h1) > 180) {
+        if (h1 < h2) {
+            h1 += 360;
+        }
+        else {
+            h2 += 360;
+        }
+    }
+    return {
+        h: Math.round((h1 + (h2 - h1) * t) % 360),
+        s: Math.round(color1.s + (color2.s - color1.s) * t),
+        b: Math.round(color1.b + (color2.b - color1.b) * t)
+    };
+}
+/**
+ * Generates a CSS color string from an RGB color.
+ *
+ * @param color RGB color object
+ * @returns CSS rgba string
+ */
+export function rgbToCss(color) {
+    return `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`;
+}
+/**
+ * Adjusts the brightness of an RGB color.
+ *
+ * @param color RGB color to adjust
+ * @param factor Factor to multiply brightness by (>1 brightens, <1 darkens)
+ * @returns Adjusted RGB color
+ */
+export function adjustBrightness(color, factor) {
+    return {
+        r: Math.min(255, Math.max(0, Math.round(color.r * factor))),
+        g: Math.min(255, Math.max(0, Math.round(color.g * factor))),
+        b: Math.min(255, Math.max(0, Math.round(color.b * factor))),
+        a: color.a
+    };
+}
 const colorSchemes = {
     // Standard Schemes
     analogous: (baseH, baseS, baseB) => [

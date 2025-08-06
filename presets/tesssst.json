@@ -1,0 +1,129 @@
+{
+  "canvasWidth": 1866,
+  "canvasHeight": 1042,
+  "cellSize": 10,
+  "minCellSize": 1,
+  "maxCellSize": 30,
+  "tickRate": 125.51,
+  "minTickRate": 2,
+  "maxTickRate": 200,
+  "decay": {
+    "baseDelay": 100,
+    "normalStep": 0.02,
+    "randomRange": 20,
+    "slowdownFactor": 0.05,
+    "minDecayChance": 0.002,
+    "baseDecayChance": 0.35,
+    "edgeBreakChance": 0.25,
+    "voidDropChance": 0.1
+  },
+  "creepingFig": {
+    "baseActivations": 10.24,
+    "neighborRadius": 5,
+    "branchAge": 5,
+    "directionFollowChance": 0.3,
+    "maxActiveCells": 10000,
+    "expansionBiasFactor": 0.2,
+    "bounceReflectionFactor": 1
+  },
+  "burstMechanics": {
+    "pulseChance": 0.12,
+    "burstSize": 30,
+    "burstDecayMultiplier": 1.5
+  },
+  "activeCellDensity": 0.54,
+  "equilibrium": {
+    "maxExpansionScale": 7,
+    "maxDecayScale": 4,
+    "minExpansionScale": 0.3,
+    "minDecayScale": 0.15,
+    "expansionResponse": 1.2,
+    "decayResponse": 1.1
+  },
+  "binaryTransitions": {
+    "enabled": true,
+    "threshold": 0.25
+  },
+  "colorSettings": {
+    "baseH": 107.45,
+    "baseS": 100,
+    "baseB": 100,
+    "scheme": "analogous"
+  },
+  "RANDOM_START": true,
+  "macros": [
+    {
+      "currentBaseline": 0,
+      "baseline": 0,
+      "targets": [
+        {
+          "path": "colorSettings.baseH",
+          "influence": 0.7,
+          "baseline": 0
+        }
+      ],
+      "useCurrentBaseline": false,
+      "trigFunc": "sin",
+      "periodMultiplier": 1,
+      "lfoPeriod": 100,
+      "dampener": 0.4,
+      "enabled": true
+    },
+    {
+      "currentBaseline": 0,
+      "baseline": 0,
+      "targets": [
+        {
+          "path": "activeCellDensity",
+          "influence": 0.5,
+          "baseline": 0.62
+        }
+      ],
+      "useCurrentBaseline": false,
+      "trigFunc": "sin",
+      "periodMultiplier": 0.25,
+      "lfoPeriod": 100,
+      "dampener": 0.2,
+      "enabled": true
+    },
+    {
+      "currentBaseline": 0,
+      "baseline": 0,
+      "targets": [
+        {
+          "path": "tickRate",
+          "influence": 0.29,
+          "baseline": 155
+        }
+      ],
+      "useCurrentBaseline": false,
+      "trigFunc": "sin",
+      "periodMultiplier": 1,
+      "lfoPeriod": 100,
+      "dampener": 1,
+      "enabled": true
+    },
+    {
+      "currentBaseline": 0,
+      "baseline": 0,
+      "targets": [
+        {
+          "path": "creepingFig.neighborRadius",
+          "influence": 0.41,
+          "baseline": 130.47
+        },
+        {
+          "path": "creepingFig.baseActivations",
+          "influence": 0.34,
+          "baseline": 11
+        }
+      ],
+      "useCurrentBaseline": false,
+      "trigFunc": "sin",
+      "periodMultiplier": 1,
+      "lfoPeriod": 100,
+      "dampener": 0.5,
+      "enabled": true
+    }
+  ]
+}

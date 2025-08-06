@@ -1,3 +1,16 @@
+/**
+ * Algorithmic Visual Evolution - Configuration
+ * 
+ * Central configuration system that defines:
+ * - Core system settings (dimensions, cell size, tick rate)
+ * - Growth and decay parameters for cell behaviors
+ * - Color settings and processing parameters
+ * - Visual effect and transition properties
+ * 
+ * Provides a single source of truth for all configurable parameters
+ * used throughout the application.
+ */
+
 // File: config.ts
 
 interface DecayConfig {
@@ -67,6 +80,7 @@ export interface Config {
   colorSettings: ColorSettings;
   derivedColors: any[];
   _overrides: Record<string, any>;
+  RANDOM_START: boolean;
 }
 
 export const config: Config = {
@@ -143,5 +157,8 @@ export const config: Config = {
   derivedColors: [],
 
   // Internal override flags for parameters touched manually.
-  _overrides: {}
+  _overrides: {},
+  
+  // RANDOM START SETTING
+  RANDOM_START: true
 }; 

@@ -1,3 +1,13 @@
+/**
+ * Algorithmic Visual Evolution - Effects Manager
+ *
+ * Manages special visual effects and transitions in the simulation:
+ * - Handles bursts, pulses, and other dynamic visual events
+ * - Controls timing and intensity of effects
+ * - Provides transition effects between states
+ * - Coordinates with main algorithms to create visual interest
+ * - Applies effects based on system state and user interactions
+ */
 export class EffectsManager {
     constructor(config, kaleidoscopeInstance) {
         this.config = config;

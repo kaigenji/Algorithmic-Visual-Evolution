@@ -1,4 +1,24 @@
+/**
+ * Algorithmic Visual Evolution - Macro UI
+ *
+ * Implements the user interface for creating and controlling parameter macros:
+ * - Provides controls for creating, editing and removing macros
+ * - Manages UI for setting macro targets, waveforms, and modulation depths
+ * - Handles real-time visualization of macro activity
+ * - Maintains the collection of active macros
+ * - Synchronizes UI state with the underlying macro system
+ */
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 import { Macro } from './macros.js';
+import { presetManager } from './presetManager.js';
 export const macros = [];
 // Updated list of available parameters for macros (excluding cellSize)
 // Now includes "Binary Death Threshold" and "Hue".
@@ -22,8 +42,9 @@ const trigFunctions = [
     { value: "sec", label: "sec" },
     { value: "cot", label: "cot" }
 ];
-// Updated period multiplier choices: from 1/32 to x8
+// Updated period multiplier choices: from 1/64 to x8
 const periodChoices = [
+    { value: 0.015625, label: "×1/64" },
     { value: 0.03125, label: "×1/32" },
     { value: 0.0625, label: "×1/16" },
     { value: 0.125, label: "×1/8" },
@@ -39,9 +60,13 @@ export function setupMacrosUI(onMacroChange) {
     if (!container)
         return;
     container.innerHTML = '<h3>Macros & LFO</h3>';
+    // Create button container for better layout
+    const buttonContainer = document.createElement('div');
+    buttonContainer.style.display = 'flex';
+    buttonContainer.style.gap = '8px';
+    buttonContainer.style.marginBottom = '8px';
     const addMacroBtn = document.createElement('button');
     addMacroBtn.textContent = "Add Macro";
-    addMacroBtn.style.marginBottom = '8px';
     addMacroBtn.addEventListener('click', () => {
         const macro = new Macro();
         macro.targets = [];
@@ -56,7 +81,33 @@ export function setupMacrosUI(onMacroChange) {
         if (onMacroChange)
             onMacroChange(macro);
     });
-    container.appendChild(addMacroBtn);
+    const savePresetBtn = document.createElement('button');
+    savePresetBtn.textContent = "Save Preset";
+    savePresetBtn.addEventListener('click', () => __awaiter(this, void 0, void 0, function* () {
+        try {
+            const presetName = yield presetManager.saveCurrentConfig();
+            savePresetBtn.textContent = `Saved: ${presetName}`;
+            setTimeout(() => {
+                savePresetBtn.textContent = "Save Preset";
+            }, 2000);
+        }
+        catch (error) {
+            savePresetBtn.textContent = "Error Saving";
+            setTimeout(() => {
+                savePresetBtn.textContent = "Save Preset";
+            }, 2000);
+        }
+    }));
+    buttonContainer.appendChild(addMacroBtn);
+    buttonContainer.appendChild(savePresetBtn);
+    container.appendChild(buttonContainer);
+    // Render existing macros that were loaded from preset
+    console.log(`Rendering ${macros.length} existing macros in UI`);
+    console.log('Macros to render:', macros);
+    macros.forEach((macro, index) => {
+        console.log(`Rendering macro ${index}:`, macro);
+        renderMacro(macro, container, onMacroChange);
+    });
 }
 function renderMacro(macro, container, onMacroChange) {
     const macroDiv = document.createElement('div');
@@ -121,13 +172,19 @@ function renderMacroContents(macro, macroDiv, onMacroChange) {
         influenceSlider.max = '100';
         influenceSlider.style.flex = '1';
         influenceSlider.value = String((tgt.influence || 1) * 100);
+        const influenceValue = document.createElement('span');
+        influenceValue.textContent = `${Math.round((tgt.influence || 1) * 100)}%`;
+        influenceValue.style.minWidth = '40px';
+        influenceValue.style.textAlign = 'right';
         influenceSlider.addEventListener('input', (e) => {
             const target = e.target;
             tgt.influence = parseFloat(target.value) / 100;
+            influenceValue.textContent = `${Math.round(tgt.influence * 100)}%`;
             if (onMacroChange)
                 onMacroChange(macro);
         });
         rowInfluence.appendChild(influenceSlider);
+        rowInfluence.appendChild(influenceValue);
         paramContainer.appendChild(rowInfluence);
         // Remove parameter button (stacked below)
         const removeParamBtn = document.createElement('button');
@@ -144,21 +201,22 @@ function renderMacroContents(macro, macroDiv, onMacroChange) {
     // 2) "Add Parameter" button
     const addParamBtn = document.createElement('button');
     addParamBtn.textContent = "Add Parameter";
-    addParamBtn.addEventListener('click', () => {
-        // Determine available options not already used
-        const usedPaths = macro.targets.map(item => item.path);
-        const availableOptions = paramDefs.filter(def => !usedPaths.includes(def.path));
-        if (availableOptions.length > 0) {
+    // Determine available options not already used
+    const usedPaths = macro.targets.map(item => item.path);
+    const availableOptions = paramDefs.filter(def => !usedPaths.includes(def.path));
+    if (availableOptions.length > 0) {
+        addParamBtn.addEventListener('click', () => {
             macro.targets.push({ path: availableOptions[0].path, influence: 1.0 });
-        }
-        else {
-            // Optionally, disable the add button if no parameters are available.
-            addParamBtn.disabled = true;
-        }
-        renderMacroContents(macro, macroDiv, onMacroChange);
-        if (onMacroChange)
-            onMacroChange(macro);
-    });
+            renderMacroContents(macro, macroDiv, onMacroChange);
+            if (onMacroChange)
+                onMacroChange(macro);
+        });
+    }
+    else {
+        addParamBtn.disabled = true;
+        addParamBtn.textContent = "No Parameters Available";
+        addParamBtn.style.opacity = '0.5';
+    }
     macroDiv.appendChild(addParamBtn);
     // 3) LFO Controls
     // 3a) Row: "Trig Function:" + dropdown

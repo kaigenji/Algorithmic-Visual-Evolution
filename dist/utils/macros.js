@@ -1,4 +1,13 @@
-// File: utils/macros.ts
+/**
+ * Algorithmic Visual Evolution - Macro System
+ *
+ * Implements a modulation system for creating dynamic parameter changes:
+ * - Provides oscillators and modulation sources for parameters
+ * - Supports various waveforms (sine, triangle, square)
+ * - Manages target parameters and modulation depth
+ * - Controls timing, frequency and phase of modulations
+ * - Enables creation of complex, evolving visual behaviors
+ */
 export class Macro {
     constructor() {
         this.currentBaseline = 0;
