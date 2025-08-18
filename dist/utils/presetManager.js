@@ -56,8 +56,17 @@ export class PresetManager {
     }
     async loadAllPresets() {
         const allPresets = [];
-        // List of preset files to try loading - we'll try all JSON files
-        const presetFiles = ['default.json', 'jewels.json', 'mandalas.json'];
+        // List of preset files to try loading
+        const presetFiles = [
+            'aurora.json',
+            'clockwork.json',
+            'default.json',
+            'jewels.json',
+            'mandalas.json',
+            'default_chaotic.json',
+            'jewels_chaotic.json',
+            'mandalas_chaotic.json'
+        ];
         console.log('Attempting to load all presets:', presetFiles);
         for (const filename of presetFiles) {
             try {
