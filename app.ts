@@ -53,7 +53,6 @@ function updateDerivedColors(): void {
 
 interface MacroTarget {
   path: string;
-  influence?: number;
   baseline?: number;
 }
 
@@ -72,8 +71,7 @@ function applyMacros(): void {
     macro.targets.forEach(tgt => {
       if (config._overrides[tgt.path]) return;
       
-      // Skip parameters that are being manually adjusted
-      if (manuallyAdjusting.has(tgt.path)) return;
+
       
       let currentVal = getConfigValueByPath(tgt.path);
       if (tgt.baseline === undefined) {
@@ -81,23 +79,10 @@ function applyMacros(): void {
       }
       const def = PARAM_DEFINITIONS.find(d => d.path === tgt.path);
       if (!def || def.max === undefined || def.min === undefined) return;
-      const range = def.max - def.min;
-      const influence = tgt.influence || 1;
       
-      // Calculate the center point (current value) as a fraction of the range
-      const centerFraction = (tgt.baseline - def.min) / range;
-      
-      // Create oscillation around the center point
-      // normWave goes from 0 to 1, we want oscillation around centerFraction
-      // Use full parameter range for oscillation
-      // normWave goes from 0 to 1, map to full parameter range
+      // Create perfect wave oscillation across full parameter range
       const targetVal = def.min + (normWave * (def.max - def.min));
-      
-      // Apply influence: control the deviation amplitude from baseline
-      // 0 = no deviation (stay at baseline), 1 = full deviation (full oscillation)
-      const deviation = targetVal - tgt.baseline;
-      let newVal = tgt.baseline + (deviation * influence);
-      newVal = Math.max(def.min, Math.min(def.max, newVal));
+      let newVal = Math.max(def.min, Math.min(def.max, targetVal));
       newVal = Math.round(newVal * 100) / 100;
       
       // Set the new value
@@ -136,9 +121,6 @@ function setConfigValueByPath(pathStr: string, newValue: any): void {
 function updateParameterSliders(): void {
   for (const path in parameterSliders) {
     const { slider, valueDisplay } = parameterSliders[path];
-    
-    // Don't update sliders that are being manually adjusted
-    if (manuallyAdjusting.has(path)) continue;
     
     const currentVal = getConfigValueByPath(path);
     slider.value = currentVal;
@@ -206,7 +188,6 @@ function onTick(): void {
 declare global {
   interface Window {
     updateConfig: (path: string, val: any) => void;
-    setParameterBeingAdjusted: (path: string, isAdjusting: boolean) => void;
   }
 }
 
@@ -231,7 +212,7 @@ function updateConfig(path: string, val: any): void {
 }
 
 // Track which parameters are currently being manually adjusted
-const manuallyAdjusting: Set<string> = new Set();
+
 
 function updateMacroBaselines(path: string, newValue: any): void {
   // Import macros and update baselines for matching parameters
@@ -250,13 +231,7 @@ function updateMacroBaselines(path: string, newValue: any): void {
   });
 }
 
-function setParameterBeingAdjusted(path: string, isAdjusting: boolean): void {
-  if (isAdjusting) {
-    manuallyAdjusting.add(path);
-  } else {
-    manuallyAdjusting.delete(path);
-  }
-}
+
 
 // Initialize preset system
 async function initializePresets(): Promise<void> {
@@ -355,13 +330,11 @@ window.addEventListener('keydown', (e: KeyboardEvent) => {
 });
 
 // Assign the updateConfig function to the window object
-window.updateConfig = updateConfig;
-window.setParameterBeingAdjusted = setParameterBeingAdjusted;
+  window.updateConfig = updateConfig;
 
 // Expose preset manager functions for debugging
 declare global {
   interface Window {
     updateConfig: (path: string, val: any) => void;
-    setParameterBeingAdjusted: (path: string, isAdjusting: boolean) => void;
   }
 } 

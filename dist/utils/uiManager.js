@@ -155,24 +155,12 @@ function createRange(def, updateConfigFn) {
     slider.setAttribute('value', getConfigValueByPath(def.path).toString());
     const valueDisplay = document.createElement('span');
     valueDisplay.textContent = (Math.round(parseFloat(slider.value) * 100) / 100).toString();
-    slider.addEventListener('mousedown', () => {
-        // Mark parameter as being adjusted
-        if (window.setParameterBeingAdjusted) {
-            window.setParameterBeingAdjusted(def.path, true);
-        }
-    });
     slider.addEventListener('input', (e) => {
         const val = parseFloat(e.target.value);
         valueDisplay.textContent = (Math.round(val * 100) / 100).toString();
         config._overrides[def.path] = true;
         setConfigValueByPath(def.path, val);
         updateConfigFn(def.path, val);
-    });
-    slider.addEventListener('mouseup', () => {
-        // Mark parameter as no longer being adjusted
-        if (window.setParameterBeingAdjusted) {
-            window.setParameterBeingAdjusted(def.path, false);
-        }
     });
     container.appendChild(label);
     container.appendChild(desc);
@@ -205,15 +193,6 @@ function createCheckbox(def, updateConfigFn) {
 function createColorSettings(updateConfigFn) {
     const container = document.createElement('div');
     container.classList.add('slider-container');
-    container.appendChild(createRange({
-        path: "colorSettings.baseH",
-        label: "Hue",
-        description: "Base hue (0 - 360°).",
-        min: 0,
-        max: 360,
-        step: 1,
-        type: "range"
-    }, updateConfigFn));
     container.appendChild(createRange({
         path: "colorSettings.baseS",
         label: "Saturation",
@@ -248,8 +227,13 @@ function createColorSettings(updateConfigFn) {
         option.textContent = schemeName;
         select.appendChild(option);
     });
+    // Set the current color scheme value
+    const currentScheme = config.colorSettings.scheme;
+    select.value = currentScheme;
     select.addEventListener('change', (e) => {
         const schemeName = e.target.value;
+        // Update the config
+        config.colorSettings.scheme = schemeName;
         // The color scheme will be applied by the colorTheory module
         updateConfigFn("colorScheme", schemeName);
     });

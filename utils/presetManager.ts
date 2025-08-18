@@ -31,31 +31,60 @@ export class PresetManager {
 
   async loadPresets(): Promise<void> {
     try {
-      // Load all preset files from the presets folder only
-      const presetFiles = await this.loadAllPresetFiles();
-      this.presets = presetFiles;
+      // Load all presets from the main presets folder
+      const allPresets = await this.loadAllPresets();
       
-      console.log(`Loaded ${this.presets.length} presets from presets/ folder:`, presetFiles.map(p => p.name));
+      // Combine all presets
+      this.presets = allPresets;
+      
+      console.log(`Loaded ${this.presets.length} total presets:`);
+      this.presets.forEach((preset, index) => {
+        console.log(`  ${index}: ${preset.name}`);
+      });
+      
+      // If no presets loaded at all, create a basic default
+      if (this.presets.length === 0) {
+        console.warn('No presets found, creating basic default');
+        this.presets.push(this.createBasicDefault());
+      }
     } catch (error) {
       console.error('Error loading presets:', error);
     }
   }
 
-  private async loadAllPresetFiles(): Promise<Preset[]> {
-    const presetFiles: Preset[] = [];
+  private createBasicDefault(): Preset {
+    return {
+      name: 'basic-default',
+      config: {
+        cellSize: 10,
+        tickRate: 60,
+        activeCellDensity: 0.62,
+        colorSettings: {
+          baseH: 0,
+          baseS: 100,
+          baseB: 100,
+          scheme: "analogous"
+        }
+      },
+      macros: []
+    };
+  }
+
+  private async loadAllPresets(): Promise<Preset[]> {
+    const allPresets: Preset[] = [];
     
-    // List of known preset files to try loading
-    const knownPresets = ['default.json', 'tesssst.json'];
+    // List of preset files to try loading - we'll try all JSON files
+    const presetFiles = ['default.json', 'jewels.json', 'mandalas.json'];
     
-    console.log('Attempting to load preset files:', knownPresets);
+    console.log('Attempting to load all presets:', presetFiles);
     
-    for (const filename of knownPresets) {
+    for (const filename of presetFiles) {
       try {
-        console.log(`Loading preset file: ${filename}`);
+        console.log(`Loading preset: ${filename}`);
         const preset = await this.loadPresetFile(filename);
         if (preset) {
           console.log(`Successfully loaded preset: ${preset.name}`);
-          presetFiles.push(preset);
+          allPresets.push(preset);
         } else {
           console.warn(`Failed to load preset: ${filename} (returned null)`);
         }
@@ -64,8 +93,8 @@ export class PresetManager {
       }
     }
     
-    console.log(`Total preset files loaded: ${presetFiles.length}`);
-    return presetFiles;
+    console.log(`Total presets loaded: ${allPresets.length}`);
+    return allPresets;
   }
 
   private async loadPresetFile(filename: string): Promise<Preset | null> {
@@ -114,6 +143,7 @@ export class PresetManager {
       return selectedPreset;
     }
     
+    // Randomly select from all available presets
     const randomIndex = Math.floor(Math.random() * this.presets.length);
     const selectedPreset = this.presets[randomIndex];
     console.log(`Randomly selected preset: ${selectedPreset.name} (index: ${randomIndex})`);

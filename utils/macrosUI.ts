@@ -30,7 +30,6 @@ interface PeriodChoice {
 
 interface MacroTarget {
   path: string;
-  influence?: number;
   baseline?: number;
 }
 
@@ -79,6 +78,22 @@ export function setupMacrosUI(onMacroChange: (macro: Macro | null) => void): voi
   if (!container) return;
   
   container.innerHTML = '<h3>Macros & LFO</h3>';
+  
+  // Add preset name display
+  const presetNameDiv = document.createElement('div');
+  presetNameDiv.style.marginBottom = '12px';
+  presetNameDiv.style.padding = '8px';
+  presetNameDiv.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+  presetNameDiv.style.borderRadius = '4px';
+  presetNameDiv.style.fontSize = '14px';
+  presetNameDiv.style.color = '#ccc';
+  
+  // Get the current preset name from the page title
+  const title = document.querySelector('title');
+  const presetName = title ? title.textContent.replace('Algorithmic Visual Evolution - ', '') : 'Unknown';
+  presetNameDiv.textContent = `Loaded Preset: ${presetName}`;
+  
+  container.appendChild(presetNameDiv);
 
   // Create button container for better layout
   const buttonContainer = document.createElement('div');
@@ -188,38 +203,7 @@ function renderMacroContents(macro: Macro, macroDiv: HTMLElement, onMacroChange:
     rowParam.appendChild(paramSelect);
     paramContainer.appendChild(rowParam);
 
-    // Row: "Influence (0–1):" label + slider
-    const rowInfluence = document.createElement('div');
-    rowInfluence.style.display = 'flex';
-    rowInfluence.style.alignItems = 'center';
-    rowInfluence.style.gap = '8px';
 
-    const labelInfluence = document.createElement('label');
-    labelInfluence.textContent = "Influence (0–1):";
-    rowInfluence.appendChild(labelInfluence);
-
-    const influenceSlider = document.createElement('input');
-    influenceSlider.type = 'range';
-    influenceSlider.min = '0';
-    influenceSlider.max = '100';
-    influenceSlider.style.flex = '1';
-    influenceSlider.value = String((tgt.influence || 1) * 100);
-    
-    const influenceValue = document.createElement('span');
-    influenceValue.textContent = `${Math.round((tgt.influence || 1) * 100)}%`;
-    influenceValue.style.minWidth = '40px';
-    influenceValue.style.textAlign = 'right';
-    
-    influenceSlider.addEventListener('input', (e: Event) => {
-      const target = e.target as HTMLInputElement;
-      tgt.influence = parseFloat(target.value) / 100;
-      influenceValue.textContent = `${Math.round(tgt.influence * 100)}%`;
-      if (onMacroChange) onMacroChange(macro);
-    });
-    
-    rowInfluence.appendChild(influenceSlider);
-    rowInfluence.appendChild(influenceValue);
-    paramContainer.appendChild(rowInfluence);
 
     // Remove parameter button (stacked below)
     const removeParamBtn = document.createElement('button');
@@ -244,7 +228,7 @@ function renderMacroContents(macro: Macro, macroDiv: HTMLElement, onMacroChange:
   
   if (availableOptions.length > 0) {
     addParamBtn.addEventListener('click', () => {
-      macro.targets.push({ path: availableOptions[0].path, influence: 1.0 });
+      macro.targets.push({ path: availableOptions[0].path });
       renderMacroContents(macro, macroDiv, onMacroChange);
       if (onMacroChange) onMacroChange(macro);
     });

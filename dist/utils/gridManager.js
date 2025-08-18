@@ -66,7 +66,7 @@ export class GridManager {
             for (let j = 0; j < cols; j++) {
                 subGrid[i][j] = {
                     state: 0,
-                    color: defaultColor ? Object.assign({}, defaultColor) : { r: 0, g: 0, b: 0, a: 1 },
+                    color: defaultColor ? { ...defaultColor } : { r: 0, g: 0, b: 0, a: 1 },
                     decaying: false,
                     birth: 0,
                     decayDelay: 0
@@ -84,7 +84,7 @@ export class GridManager {
         const c = grid[i][j];
         c.state = 1;
         if (color) {
-            c.color = Object.assign({}, color);
+            c.color = { ...color };
         }
         else if (!c.color) {
             c.color = { r: 0, g: 0, b: 0, a: 1 };
@@ -110,7 +110,7 @@ export class GridManager {
             return;
         const targetCell = targetGrid[targetRow][targetCol];
         targetCell.state = sourceCell.state;
-        targetCell.color = sourceCell.color ? Object.assign({}, sourceCell.color) : undefined;
+        targetCell.color = sourceCell.color ? { ...sourceCell.color } : undefined;
         targetCell.decaying = sourceCell.decaying;
         targetCell.birth = sourceCell.birth;
         targetCell.decayDelay = sourceCell.decayDelay;

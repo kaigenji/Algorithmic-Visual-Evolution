@@ -1,27 +1,27 @@
 {
-  "canvasWidth": 1866,
-  "canvasHeight": 1042,
-  "cellSize": 10,
+  "canvasWidth": 2133,
+  "canvasHeight": 1200,
+  "cellSize": 13,
   "minCellSize": 1,
   "maxCellSize": 30,
-  "tickRate": 125.51,
+  "tickRate": 22.63,
   "minTickRate": 2,
   "maxTickRate": 200,
   "decay": {
-    "baseDelay": 100,
+    "baseDelay": 270,
     "normalStep": 0.02,
     "randomRange": 20,
     "slowdownFactor": 0.05,
     "minDecayChance": 0.002,
-    "baseDecayChance": 0.35,
+    "baseDecayChance": 0.24,
     "edgeBreakChance": 0.25,
     "voidDropChance": 0.1
   },
   "creepingFig": {
-    "baseActivations": 10.24,
-    "neighborRadius": 5,
-    "branchAge": 5,
-    "directionFollowChance": 0.3,
+    "baseActivations": 14.28,
+    "neighborRadius": 2,
+    "branchAge": 12,
+    "directionFollowChance": 0.09,
     "maxActiveCells": 10000,
     "expansionBiasFactor": 0.2,
     "bounceReflectionFactor": 1
@@ -31,7 +31,7 @@
     "burstSize": 30,
     "burstDecayMultiplier": 1.5
   },
-  "activeCellDensity": 0.54,
+  "activeCellDensity": 0.19,
   "equilibrium": {
     "maxExpansionScale": 7,
     "maxDecayScale": 4,
@@ -41,16 +41,17 @@
     "decayResponse": 1.1
   },
   "binaryTransitions": {
-    "enabled": true,
-    "threshold": 0.25
+    "enabled": false,
+    "threshold": 0.7
   },
   "colorSettings": {
-    "baseH": 107.45,
+    "baseH": 133.01,
     "baseS": 100,
     "baseB": 100,
-    "scheme": "analogous"
+    "scheme": "analogous-gradient"
   },
   "RANDOM_START": true,
+  "colorScheme": "analogous-gradient",
   "macros": [
     {
       "currentBaseline": 0,
@@ -58,47 +59,13 @@
       "targets": [
         {
           "path": "colorSettings.baseH",
-          "influence": 0.7,
+          "influence": 1,
           "baseline": 0
         }
       ],
       "useCurrentBaseline": false,
       "trigFunc": "sin",
-      "periodMultiplier": 1,
-      "lfoPeriod": 100,
-      "dampener": 0.4,
-      "enabled": true
-    },
-    {
-      "currentBaseline": 0,
-      "baseline": 0,
-      "targets": [
-        {
-          "path": "activeCellDensity",
-          "influence": 0.5,
-          "baseline": 0.62
-        }
-      ],
-      "useCurrentBaseline": false,
-      "trigFunc": "sin",
-      "periodMultiplier": 0.25,
-      "lfoPeriod": 100,
-      "dampener": 0.2,
-      "enabled": true
-    },
-    {
-      "currentBaseline": 0,
-      "baseline": 0,
-      "targets": [
-        {
-          "path": "tickRate",
-          "influence": 0.29,
-          "baseline": 155
-        }
-      ],
-      "useCurrentBaseline": false,
-      "trigFunc": "sin",
-      "periodMultiplier": 1,
+      "periodMultiplier": 0.015625,
       "lfoPeriod": 100,
       "dampener": 1,
       "enabled": true
@@ -108,21 +75,55 @@
       "baseline": 0,
       "targets": [
         {
-          "path": "creepingFig.neighborRadius",
-          "influence": 0.41,
-          "baseline": 130.47
+          "path": "tickRate",
+          "influence": 0.66,
+          "baseline": 117
         },
         {
-          "path": "creepingFig.baseActivations",
-          "influence": 0.34,
-          "baseline": 11
+          "path": "activeCellDensity",
+          "influence": 1,
+          "baseline": 115.31
+        }
+      ],
+      "useCurrentBaseline": false,
+      "trigFunc": "cos",
+      "periodMultiplier": 0.015625,
+      "lfoPeriod": 100,
+      "dampener": 0.82,
+      "enabled": true
+    },
+    {
+      "currentBaseline": 0,
+      "baseline": 0,
+      "targets": [
+        {
+          "path": "binaryTransitions.threshold",
+          "influence": 0.81,
+          "baseline": 0.18
         }
       ],
       "useCurrentBaseline": false,
       "trigFunc": "sin",
-      "periodMultiplier": 1,
+      "periodMultiplier": 0.125,
       "lfoPeriod": 100,
-      "dampener": 0.5,
+      "dampener": 0.47,
+      "enabled": true
+    },
+    {
+      "currentBaseline": 0,
+      "baseline": 0,
+      "targets": [
+        {
+          "path": "creepingFig.baseActivations",
+          "influence": 1,
+          "baseline": 110.48
+        }
+      ],
+      "useCurrentBaseline": false,
+      "trigFunc": "sin",
+      "periodMultiplier": 0.03125,
+      "lfoPeriod": 100,
+      "dampener": 0.79,
       "enabled": true
     }
   ]

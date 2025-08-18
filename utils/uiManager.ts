@@ -176,12 +176,7 @@ function createRange(def: ParameterDefinition, updateConfigFn: UpdateConfigFunct
   const valueDisplay = document.createElement('span');
   valueDisplay.textContent = (Math.round(parseFloat(slider.value) * 100) / 100).toString();
 
-  slider.addEventListener('mousedown', () => {
-    // Mark parameter as being adjusted
-    if (window.setParameterBeingAdjusted) {
-      window.setParameterBeingAdjusted(def.path, true);
-    }
-  });
+
 
   slider.addEventListener('input', (e) => {
     const val = parseFloat((e.target as HTMLInputElement).value);
@@ -191,12 +186,7 @@ function createRange(def: ParameterDefinition, updateConfigFn: UpdateConfigFunct
     updateConfigFn(def.path, val);
   });
 
-  slider.addEventListener('mouseup', () => {
-    // Mark parameter as no longer being adjusted
-    if (window.setParameterBeingAdjusted) {
-      window.setParameterBeingAdjusted(def.path, false);
-    }
-  });
+
 
   container.appendChild(label);
   container.appendChild(desc);
@@ -240,15 +230,6 @@ function createColorSettings(updateConfigFn: UpdateConfigFunction): HTMLDivEleme
   container.classList.add('slider-container');
 
   container.appendChild(createRange({
-    path: "colorSettings.baseH",
-    label: "Hue",
-    description: "Base hue (0 - 360°).",
-    min: 0,
-    max: 360,
-    step: 1,
-    type: "range"
-  }, updateConfigFn));
-  container.appendChild(createRange({
     path: "colorSettings.baseS",
     label: "Saturation",
     description: "Base saturation (0 - 100%).",
@@ -287,8 +268,14 @@ function createColorSettings(updateConfigFn: UpdateConfigFunction): HTMLDivEleme
     select.appendChild(option);
   });
 
+  // Set the current color scheme value
+  const currentScheme = config.colorSettings.scheme;
+  select.value = currentScheme;
+
   select.addEventListener('change', (e) => {
     const schemeName = (e.target as HTMLSelectElement).value;
+    // Update the config
+    config.colorSettings.scheme = schemeName;
     // The color scheme will be applied by the colorTheory module
     updateConfigFn("colorScheme", schemeName);
   });

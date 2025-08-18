@@ -8,15 +8,6 @@
  * - Maintains the collection of active macros
  * - Synchronizes UI state with the underlying macro system
  */
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 import { Macro } from './macros.js';
 import { presetManager } from './presetManager.js';
 export const macros = [];
@@ -60,6 +51,19 @@ export function setupMacrosUI(onMacroChange) {
     if (!container)
         return;
     container.innerHTML = '<h3>Macros & LFO</h3>';
+    // Add preset name display
+    const presetNameDiv = document.createElement('div');
+    presetNameDiv.style.marginBottom = '12px';
+    presetNameDiv.style.padding = '8px';
+    presetNameDiv.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+    presetNameDiv.style.borderRadius = '4px';
+    presetNameDiv.style.fontSize = '14px';
+    presetNameDiv.style.color = '#ccc';
+    // Get the current preset name from the page title
+    const title = document.querySelector('title');
+    const presetName = title ? title.textContent.replace('Algorithmic Visual Evolution - ', '') : 'Unknown';
+    presetNameDiv.textContent = `Loaded Preset: ${presetName}`;
+    container.appendChild(presetNameDiv);
     // Create button container for better layout
     const buttonContainer = document.createElement('div');
     buttonContainer.style.display = 'flex';
@@ -83,9 +87,9 @@ export function setupMacrosUI(onMacroChange) {
     });
     const savePresetBtn = document.createElement('button');
     savePresetBtn.textContent = "Save Preset";
-    savePresetBtn.addEventListener('click', () => __awaiter(this, void 0, void 0, function* () {
+    savePresetBtn.addEventListener('click', async () => {
         try {
-            const presetName = yield presetManager.saveCurrentConfig();
+            const presetName = await presetManager.saveCurrentConfig();
             savePresetBtn.textContent = `Saved: ${presetName}`;
             setTimeout(() => {
                 savePresetBtn.textContent = "Save Preset";
@@ -97,7 +101,7 @@ export function setupMacrosUI(onMacroChange) {
                 savePresetBtn.textContent = "Save Preset";
             }, 2000);
         }
-    }));
+    });
     buttonContainer.appendChild(addMacroBtn);
     buttonContainer.appendChild(savePresetBtn);
     container.appendChild(buttonContainer);
@@ -158,34 +162,6 @@ function renderMacroContents(macro, macroDiv, onMacroChange) {
         });
         rowParam.appendChild(paramSelect);
         paramContainer.appendChild(rowParam);
-        // Row: "Influence (0–1):" label + slider
-        const rowInfluence = document.createElement('div');
-        rowInfluence.style.display = 'flex';
-        rowInfluence.style.alignItems = 'center';
-        rowInfluence.style.gap = '8px';
-        const labelInfluence = document.createElement('label');
-        labelInfluence.textContent = "Influence (0–1):";
-        rowInfluence.appendChild(labelInfluence);
-        const influenceSlider = document.createElement('input');
-        influenceSlider.type = 'range';
-        influenceSlider.min = '0';
-        influenceSlider.max = '100';
-        influenceSlider.style.flex = '1';
-        influenceSlider.value = String((tgt.influence || 1) * 100);
-        const influenceValue = document.createElement('span');
-        influenceValue.textContent = `${Math.round((tgt.influence || 1) * 100)}%`;
-        influenceValue.style.minWidth = '40px';
-        influenceValue.style.textAlign = 'right';
-        influenceSlider.addEventListener('input', (e) => {
-            const target = e.target;
-            tgt.influence = parseFloat(target.value) / 100;
-            influenceValue.textContent = `${Math.round(tgt.influence * 100)}%`;
-            if (onMacroChange)
-                onMacroChange(macro);
-        });
-        rowInfluence.appendChild(influenceSlider);
-        rowInfluence.appendChild(influenceValue);
-        paramContainer.appendChild(rowInfluence);
         // Remove parameter button (stacked below)
         const removeParamBtn = document.createElement('button');
         removeParamBtn.textContent = "Remove";
@@ -206,7 +182,7 @@ function renderMacroContents(macro, macroDiv, onMacroChange) {
     const availableOptions = paramDefs.filter(def => !usedPaths.includes(def.path));
     if (availableOptions.length > 0) {
         addParamBtn.addEventListener('click', () => {
-            macro.targets.push({ path: availableOptions[0].path, influence: 1.0 });
+            macro.targets.push({ path: availableOptions[0].path });
             renderMacroContents(macro, macroDiv, onMacroChange);
             if (onMacroChange)
                 onMacroChange(macro);

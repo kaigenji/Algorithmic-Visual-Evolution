@@ -8,15 +8,6 @@
  * - Initializes UI components, parameters and macros
  * - Manages the animation loop and timing
  */
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 // File: app.ts
 import { config } from './config.js';
 import { GridManager } from './utils/gridManager.js';
@@ -55,9 +46,6 @@ function applyMacros() {
         macro.targets.forEach(tgt => {
             if (config._overrides[tgt.path])
                 return;
-            // Skip parameters that are being manually adjusted
-            if (manuallyAdjusting.has(tgt.path))
-                return;
             let currentVal = getConfigValueByPath(tgt.path);
             if (tgt.baseline === undefined) {
                 tgt.baseline = currentVal;
@@ -65,20 +53,9 @@ function applyMacros() {
             const def = PARAM_DEFINITIONS.find(d => d.path === tgt.path);
             if (!def || def.max === undefined || def.min === undefined)
                 return;
-            const range = def.max - def.min;
-            const influence = tgt.influence || 1;
-            // Calculate the center point (current value) as a fraction of the range
-            const centerFraction = (tgt.baseline - def.min) / range;
-            // Create oscillation around the center point
-            // normWave goes from 0 to 1, we want oscillation around centerFraction
-            // Use full parameter range for oscillation
-            // normWave goes from 0 to 1, map to full parameter range
+            // Create perfect wave oscillation across full parameter range
             const targetVal = def.min + (normWave * (def.max - def.min));
-            // Apply influence: control the deviation amplitude from baseline
-            // 0 = no deviation (stay at baseline), 1 = full deviation (full oscillation)
-            const deviation = targetVal - tgt.baseline;
-            let newVal = tgt.baseline + (deviation * influence);
-            newVal = Math.max(def.min, Math.min(def.max, newVal));
+            let newVal = Math.max(def.min, Math.min(def.max, targetVal));
             newVal = Math.round(newVal * 100) / 100;
             // Set the new value
             setConfigValueByPath(tgt.path, newVal);
@@ -113,9 +90,6 @@ function setConfigValueByPath(pathStr, newValue) {
 function updateParameterSliders() {
     for (const path in parameterSliders) {
         const { slider, valueDisplay } = parameterSliders[path];
-        // Don't update sliders that are being manually adjusted
-        if (manuallyAdjusting.has(path))
-            continue;
         const currentVal = getConfigValueByPath(path);
         slider.value = currentVal;
         valueDisplay.textContent = (Math.round(currentVal * 100) / 100).toString();
@@ -137,7 +111,10 @@ function render() {
             const cell = cells[i][j];
             if (cell.state === 1 && cell.color) {
                 // Use modified RGB color with adjusted alpha if needed
-                const displayColor = Object.assign(Object.assign({}, cell.color), { a: binaryOn ? 1.0 : cell.color.a });
+                const displayColor = {
+                    ...cell.color,
+                    a: binaryOn ? 1.0 : cell.color.a
+                };
                 // Use the rgbToCss utility instead of manual string creation
                 ctx.fillStyle = rgbToCss(displayColor);
                 ctx.fillRect(j * cellSize, i * cellSize, cellSize, cellSize);
@@ -189,7 +166,6 @@ function updateConfig(path, val) {
     updateMacroBaselines(path, val);
 }
 // Track which parameters are currently being manually adjusted
-const manuallyAdjusting = new Set();
 function updateMacroBaselines(path, newValue) {
     // Import macros and update baselines for matching parameters
     import('./utils/macrosUI.js').then(({ macros }) => {
@@ -206,78 +182,66 @@ function updateMacroBaselines(path, newValue) {
         console.warn('Failed to update macro baselines:', error);
     });
 }
-function setParameterBeingAdjusted(path, isAdjusting) {
-    if (isAdjusting) {
-        manuallyAdjusting.add(path);
+// Initialize preset system
+async function initializePresets() {
+    // Add a small delay to ensure server is ready
+    await new Promise(resolve => setTimeout(resolve, 100));
+    await presetManager.loadPresets();
+    // Always load a preset - either random or default
+    let presetToLoad = null;
+    if (config.RANDOM_START) {
+        presetToLoad = presetManager.getRandomPreset();
+        if (presetToLoad) {
+            console.log(`Loading random preset: ${presetToLoad.name}`);
+        }
+    }
+    // If no random preset or RANDOM_START is false, load the first available preset
+    if (!presetToLoad) {
+        const allPresets = presetManager.getPresets();
+        if (allPresets.length > 0) {
+            // Load the first preset (usually default)
+            const firstPreset = allPresets[0];
+            if (firstPreset) {
+                presetToLoad = firstPreset;
+                console.log(`Loading first available preset: ${firstPreset.name}`);
+            }
+        }
+    }
+    // Apply the preset if we found one
+    if (presetToLoad) {
+        presetManager.applyPreset(presetToLoad);
+        console.log(`Applied preset: ${presetToLoad.name}`);
+        // Show which preset was loaded in the UI
+        const title = document.querySelector('title');
+        if (title) {
+            title.textContent = `Algorithmic Visual Evolution - ${presetToLoad.name}`;
+        }
     }
     else {
-        manuallyAdjusting.delete(path);
+        console.warn('No presets available, using default config');
     }
 }
-// Initialize preset system
-function initializePresets() {
-    return __awaiter(this, void 0, void 0, function* () {
-        // Add a small delay to ensure server is ready
-        yield new Promise(resolve => setTimeout(resolve, 100));
-        yield presetManager.loadPresets();
-        // Always load a preset - either random or default
-        let presetToLoad = null;
-        if (config.RANDOM_START) {
-            presetToLoad = presetManager.getRandomPreset();
-            if (presetToLoad) {
-                console.log(`Loading random preset: ${presetToLoad.name}`);
-            }
-        }
-        // If no random preset or RANDOM_START is false, load the first available preset
-        if (!presetToLoad) {
-            const allPresets = presetManager.getPresets();
-            if (allPresets.length > 0) {
-                // Load the first preset (usually default)
-                const firstPreset = allPresets[0];
-                if (firstPreset) {
-                    presetToLoad = firstPreset;
-                    console.log(`Loading first available preset: ${firstPreset.name}`);
-                }
-            }
-        }
-        // Apply the preset if we found one
-        if (presetToLoad) {
-            presetManager.applyPreset(presetToLoad);
-            console.log(`Applied preset: ${presetToLoad.name}`);
-            // Show which preset was loaded in the UI
-            const title = document.querySelector('title');
-            if (title) {
-                title.textContent = `Algorithmic Visual Evolution - ${presetToLoad.name}`;
-            }
-        }
-        else {
-            console.warn('No presets available, using default config');
-        }
-    });
-}
 // Initialize the application
-function initializeApp() {
-    return __awaiter(this, void 0, void 0, function* () {
-        yield initializePresets();
-        // Debug: Check config values after preset application
-        console.log('Config values after preset application:', {
-            cellSize: config.cellSize,
-            tickRate: config.tickRate,
-            activeCellDensity: config.activeCellDensity,
-            colorSettings: config.colorSettings,
-            binaryTransitions: config.binaryTransitions
-        });
-        // Wait a moment for macros to be fully applied
-        yield new Promise(resolve => setTimeout(resolve, 100));
-        setupUI(updateConfig);
-        setupMacrosUI((macro) => {
-            // Optionally integrate with key controls.
-        });
-        createSimulation();
-        tickManager.onTick(onTick);
-        tickManager.start();
-        setupKeyControls(config, () => { }, console.log);
+async function initializeApp() {
+    await initializePresets();
+    // Debug: Check config values after preset application
+    console.log('Config values after preset application:', {
+        cellSize: config.cellSize,
+        tickRate: config.tickRate,
+        activeCellDensity: config.activeCellDensity,
+        colorSettings: config.colorSettings,
+        binaryTransitions: config.binaryTransitions
     });
+    // Wait a moment for macros to be fully applied
+    await new Promise(resolve => setTimeout(resolve, 100));
+    setupUI(updateConfig);
+    setupMacrosUI((macro) => {
+        // Optionally integrate with key controls.
+    });
+    createSimulation();
+    tickManager.onTick(onTick);
+    tickManager.start();
+    setupKeyControls(config, () => { }, console.log);
 }
 // Start the application
 initializeApp();
@@ -303,5 +267,4 @@ window.addEventListener('keydown', (e) => {
 });
 // Assign the updateConfig function to the window object
 window.updateConfig = updateConfig;
-window.setParameterBeingAdjusted = setParameterBeingAdjusted;
 //# sourceMappingURL=app.js.map
