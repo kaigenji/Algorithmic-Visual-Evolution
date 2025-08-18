@@ -1,8 +1,8 @@
 {
   "canvasWidth": 1920,
   "canvasHeight": 1080,
-  "cellSize": 12,
-  "minCellSize": 1,
+  "cellSize": 10,
+  "minCellSize": 8,
   "maxCellSize": 30,
   "tickRate": 40,
   "minTickRate": 2,
