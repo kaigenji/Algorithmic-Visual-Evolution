@@ -1,3 +1,5 @@
+[Watch demo](./Algorithmic%20Visual%20Evolution%20Demo.mov)
+
 # Algorithmic Visual Evolution
 
 A modular, browser-based system for evolving algorithmic visuals: parameter-driven feedback, macros, and GPU-backed rendering.
