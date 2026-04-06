@@ -1,4 +1,4 @@
-[![Algorithmic Visual Evolution Demo](https://img.youtube.com/vi/wnuDwtfd6sA/maxresdefault.jpg)](https://youtu.be/wnuDwtfd6sA)
+[![Watch Demo](https://img.youtube.com/vi/wnuDwtfd6sA/hqdefault.jpg)](https://youtu.be/wnuDwtfd6sA)
 
 # Algorithmic Visual Evolution
 
