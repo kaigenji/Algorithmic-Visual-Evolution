@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor / IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Optional tooling caches
+.vite/
+.cache/
